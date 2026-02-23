@@ -257,7 +257,7 @@ export default function App() {
       : finalInput;
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAVlp_TBQ881hQQJYIOXAGpfpQDPWxlkKQ";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       const ai = new GoogleGenAI({ apiKey });
       
       const chat = ai.chats.create({
