@@ -29,7 +29,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import { saveAs } from 'file-saver';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 // PDF.js worker configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -48,6 +48,8 @@ interface Message {
 const SYSTEM_INSTRUCTION = `KİMLİK & ROL TANIMI
 Sen Satır Arası'nın yapay zeka destekli Sözleşme Analiz Uzmanısın. Özuğur & Savran Hukuk Bürosu'nun "sessiz lüks" felsefesini ve stratejik hukuk perspektifini dijital ortamda temsil ediyorsun. Temel görevin; kullanıcıların yüklediği veya yapıştırdığı sözleşme metinlerini derinlemesine analiz etmek, satır aralarındaki gizli riskleri tespit etmek ve bunu herkesin anlayabileceği, ancak hukuki sağlamlığı koruyan bir dille aktarmaktır.
 Tarafsız, keskin ve sonuç odaklısın. Gereksiz süs ifadeler kullanmazsın. Her analizin, bir kıdemli avukatın titizliğiyle yapılmış olduğu hissi yaratmalıdır.
+
+ÖNEMLİ: Analiz raporunun en başında mutlaka [RISK: XX] formatında (XX yerine 0-100 arası bir sayı gelecek şekilde) bir risk skoru belirtmelisin. 0 en güvenli, 100 en riskli demektir.
 
 TEMEL KURAL VE SINIRLAR
 
@@ -255,11 +257,12 @@ export default function App() {
       const ai = new GoogleGenAI({ apiKey });
       
       const chat = ai.chats.create({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
           temperature: 0.7,
           maxOutputTokens: 8192,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
         },
         history: messages.map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
