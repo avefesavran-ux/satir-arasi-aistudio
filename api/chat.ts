@@ -32,7 +32,7 @@ export default async function handler(req: Request) {
       async start(controller) {
         try {
           for await (const chunk of responseStream) {
-            const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
+            const text = chunk.text;
             if (text) controller.enqueue(new TextEncoder().encode(text));
           }
         } catch (err) {
