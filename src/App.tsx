@@ -255,10 +255,11 @@ export default function App() {
       const ai = new GoogleGenAI({ apiKey });
       
       const chat = ai.chats.create({
-        model: "gemini-3.1-pro-preview",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
           temperature: 0.7,
+          maxOutputTokens: 8192,
         },
         history: messages.map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
@@ -272,7 +273,6 @@ export default function App() {
 
       // Add an empty assistant message to start streaming into
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-      setIsLoading(false);
 
       let accumulatedText = '';
 
@@ -290,6 +290,7 @@ export default function App() {
           });
         }
       }
+      setIsLoading(false);
     } catch (error: any) {
       console.error("Gemini API Error:", error);
       setMessages(prev => [...prev, { role: 'assistant', content: `❌ **Hata:** ${error.message || "Analiz sırasında bir hata oluştu."}` }]);
