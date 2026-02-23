@@ -29,7 +29,6 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import { saveAs } from 'file-saver';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
 // PDF.js worker configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -235,6 +234,7 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // ✅ DÜZELTILMIŞ handleSend — artık /api/chat backend'ini kullanıyor
   const handleSend = async (textOverride?: string) => {
     const finalInput = textOverride || input;
     if (!finalInput.trim() && !currentFileContent) return;
@@ -252,53 +252,54 @@ export default function App() {
     setInput('');
     setIsLoading(true);
 
-    const fullPrompt = currentFileContent 
+    const fullPrompt = currentFileContent
       ? `${finalInput}\n\n[Yüklenen Dosya: ${currentFile?.name}]\n\n${currentFileContent}`
       : finalInput;
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      const ai = new GoogleGenAI({ apiKey });
-      
-      const chat = ai.chats.create({
-        model: "gemini-3.1-pro-preview",
-        config: {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: fullPrompt,
           systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-        },
-        history: messages.map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }]
-        }))
+          history: messages.map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          }))
+        })
       });
 
-      const responseStream = await chat.sendMessageStream({
-        message: fullPrompt,
-      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Sunucu hatası: ${response.status} — ${errText}`);
+      }
 
-      // Add an empty assistant message to start streaming into
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       let accumulatedText = '';
 
-      for await (const chunk of responseStream) {
-const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
-        if (text) {
-          accumulatedText += text;
-          setMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1] = {
-              ...newMessages[newMessages.length - 1],
-              content: accumulatedText
-            };
-            return newMessages;
-          });
-        }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value, { stream: true });
+        accumulatedText += text;
+        setMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = {
+            ...newMessages[newMessages.length - 1],
+            content: accumulatedText
+          };
+          return newMessages;
+        });
       }
+
       setIsLoading(false);
     } catch (error: any) {
-      console.error("Gemini API Error:", error);
+      console.error("API Error:", error);
       setMessages(prev => [...prev, { role: 'assistant', content: `❌ **Hata:** ${error.message || "Analiz sırasında bir hata oluştu."}` }]);
       setIsLoading(false);
     } finally {
@@ -437,7 +438,7 @@ const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
                 <h3 className="font-serif text-2xl font-bold mb-6">Bizi Tanıyın: Satır Arası</h3>
                 <div className="space-y-6 text-[var(--text-sec)] leading-relaxed text-lg">
                   <p>Ankara merkezli butik bir hukuk bürosu olan Özuğur & Savran bünyesinde, müvekkillerimizin karmaşık sözleşme metinleri arasında kaybolduğunu fark ederek yola çıktık. Başlangıçta amacımız, hukuki belgelerdeki riskleri geleneksel yöntemlerle minimize etmekti. Ancak kısa sürede gördük ki; günümüzün hızında müvekkillerimizin sadece bir "avukat görüşüne" değil, satır aralarındaki gizli riskleri anında görebilecekleri, şeffaf ve erişilebilir bir teknolojiye ihtiyacı var.</p>
-                  <p>Bugün Satır Arası, yapay zeka ve hukuk uzmanlığını bir araya getirerek sözleşme analizi, risk tespiti ve mevzuat uyumu süreçlerini saniyelere indiriyor. Tıpkı hukuk pratiğimizde olduğu gibi, burada da "sessiz lüks" felsefesini benimsiyoruz: Gösterişten uzak, stratejik, keskin ve sonuç odaklı. Karmaşık hukuki süreçleri sizin için en sorunsuz ve zahmetsiz hale getirmek, satır aralarındaki belirsizlikleri güvene dönüştürmek için buradayız.</p>
+                  <p>Bugün Satır Arası, yapay zeka ve hukuk uzmanlığını bir araya getirerek sözleşme analizi, risk tespiti ve mevzuat uyumu süreçlerini saniyelere indiriyor. Tıpkı hukuk pratiğimizde olduğe gibi, burada da "sessiz lüks" felsefesini benimsiyoruz: Gösterişten uzak, stratejik, keskin ve sonuç odaklı. Karmaşık hukuki süreçleri sizin için en sorunsuz ve zahmetsiz hale getirmek, satır aralarındaki belirsizlikleri güvene dönüştürmek için buradayız.</p>
                 </div>
               </section>
 
@@ -476,7 +477,7 @@ const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
                 </div>
                 <div className="space-y-4 leading-relaxed opacity-80">
                   <p>Satır Arası v4.0, bilginin paylaştıkça çoğaldığına ve toplumun her kesimine dokunması gerektiğine inanan bir vizyonla hayata geçti. Sadece bir içerik platformu olmanın ötesinde, toplumsal fayda sağlamayı amaçlayan bir sosyal sorumluluk köprüsü kuruyoruz.</p>
-                  <p>Yürüttüğümüz projelerle, eğitimden dayanışmaya kadar pek çok alanda fark yaratmayı ve her "satır arasında" iyiliğe yer açmayı hedefliyoruz. Amacımız, sadece okunan değil, hayatın içinde aktif olarak fayda sağlamayan, projeleriyle bireylerin gelişimine ve toplumsal bilince katkı sunan sürdürülebilir bir ekosistem oluşturmaktır.</p>
+                  <p>Yürüttüğümüz projelerle, eğitimden dayanışmaya kadar pek çok alanda fark yaratmayı ve her "satır arasında" iyiliğe yer açmayı hedefliyoruz. Amacımız, sadece okunan değil, hayatın içinde aktif olarak fayda sağlayan, projeleriyle bireylerin gelişimine ve toplumsal bilince katkı sunan sürdürülebilir bir ekosistem oluşturmaktır.</p>
                 </div>
               </footer>
             </motion.div>
@@ -572,6 +573,8 @@ function MessageItem({ message }: { message: Message }) {
       if (riskMatch) {
         setRiskScore(parseInt(riskMatch[1]));
         setCleanContent(message.content.replace(/\[RISK:\s*\d+\]/, '').trim());
+      } else {
+        setCleanContent(message.content);
       }
     }
   }, [message, isAssistant]);
@@ -587,15 +590,11 @@ function MessageItem({ message }: { message: Message }) {
   };
 
   const downloadPDF = async () => {
-    const element = document.getElementById(`msg-content-${message.content.slice(0, 20)}`);
-    if (!element) return;
-
-    // Create a temporary container for PDF rendering to ensure Times New Roman and proper styling
     const printContainer = document.createElement('div');
     printContainer.style.position = 'absolute';
     printContainer.style.left = '-9999px';
     printContainer.style.top = '-9999px';
-    printContainer.style.width = '700px'; // A4 width roughly
+    printContainer.style.width = '700px';
     printContainer.style.padding = '40px';
     printContainer.style.backgroundColor = 'white';
     printContainer.style.color = 'black';
@@ -614,7 +613,7 @@ function MessageItem({ message }: { message: Message }) {
         </div>
       ` : ''}
       <div style="white-space: pre-wrap;">${cleanContent}</div>
-      <div style="margin-top: 40px; border-top: 1px solid #eee; pt: 20px; font-style: italic; font-size: 9pt; color: #666;">
+      <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; font-style: italic; font-size: 9pt; color: #666;">
         Yasal Uyarı: Bu analiz bilgilendirme amaçlıdır ve hukuki tavsiye niteliği taşımaz.
         Bağlayıcı karar öncesinde bir avukattan profesyonel destek almanız önerilir.
       </div>
@@ -723,7 +722,7 @@ function MessageItem({ message }: { message: Message }) {
         </div>
       )}
 
-      <div id={`msg-content-${message.content.slice(0, 20)}`} className={cn("text-lg leading-relaxed font-normal", isAssistant ? "markdown-body" : "whitespace-pre-wrap")}>
+      <div className={cn("text-lg leading-relaxed font-normal", isAssistant ? "markdown-body" : "whitespace-pre-wrap")}>
         {isAssistant ? (
           <div className="markdown-body">
             <ReactMarkdown>{cleanContent}</ReactMarkdown>
