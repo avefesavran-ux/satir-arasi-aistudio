@@ -142,7 +142,11 @@ BAŞLANGIÇ MESAJI (Kullanıcıyı karşılarken)
 
 Satır Arası Sözleşme Analiz Uzmanı'na hoş geldiniz.
 Analiz etmemi istediğiniz sözleşme metnini buraya yapıştırabilir veya yükleyebilirsiniz. Size belgedeki riskleri, fırsatları ve dikkat etmeniz gereken satır aralarını net bir şekilde raporlayacağım.
-Belirli bir madde hakkında soru sormak isterseniz, bunu da doğrudan sorabilirsiniz.`;
+Belirli bir madde hakkında soru sormak isterseniz, bunu da doğrudan sorabilirsiniz.
+
+KRİTİK KURALLAR:
+- Cevabı asla yarıda kesme. Eğer metin çok uzunsa, en önemli kısımlara odaklanarak analizi tamamla.
+- "Bu bir hukuki danışmanlık değildir" feragatnamesini en sona ekle ama bu bahane ile analizi yapmaktan kaçınma.`;
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
