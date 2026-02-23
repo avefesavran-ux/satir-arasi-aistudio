@@ -266,7 +266,6 @@ export default function App() {
           systemInstruction: SYSTEM_INSTRUCTION,
           temperature: 0.7,
           maxOutputTokens: 8192,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
         },
         history: messages.map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
@@ -284,7 +283,7 @@ export default function App() {
       let accumulatedText = '';
 
       for await (const chunk of responseStream) {
-        const text = chunk.text;
+const text = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
         if (text) {
           accumulatedText += text;
           setMessages(prev => {
