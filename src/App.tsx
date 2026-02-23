@@ -29,6 +29,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } fro
 import { saveAs } from 'file-saver';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { GoogleGenAI } from "@google/genai";
 
 // PDF.js worker configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -250,66 +251,48 @@ export default function App() {
       : finalInput;
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: fullPrompt,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
-          systemInstruction: SYSTEM_INSTRUCTION
-        })
+      const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAVlp_TBQ881hQQJYIOXAGpfpQDPWxlkKQ";
+      const ai = new GoogleGenAI({ apiKey });
+      
+      const chat = ai.chats.create({
+        model: "gemini-3.1-pro-preview",
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.7,
+        },
+        history: messages.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        }))
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analiz sırasında bir hata oluştu.');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      
-      if (!reader) throw new Error('Stream okunamadı.');
+      const responseStream = await chat.sendMessageStream({
+        message: fullPrompt,
+      });
 
       // Add an empty assistant message to start streaming into
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-      setIsLoading(false); // Stop showing the "Analyzing" pulse once we start getting text
+      setIsLoading(false);
 
       let accumulatedText = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6).trim();
-            if (dataStr === '[DONE]') break;
-            
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.text) {
-                accumulatedText += data.text;
-                // Update the last message (the assistant's message)
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  newMessages[newMessages.length - 1] = {
-                    ...newMessages[newMessages.length - 1],
-                    content: accumulatedText
-                  };
-                  return newMessages;
-                });
-              }
-            } catch (e) {
-              console.error('Error parsing stream chunk:', e);
-            }
-          }
+      for await (const chunk of responseStream) {
+        const text = chunk.text;
+        if (text) {
+          accumulatedText += text;
+          setMessages(prev => {
+            const newMessages = [...prev];
+            newMessages[newMessages.length - 1] = {
+              ...newMessages[newMessages.length - 1],
+              content: accumulatedText
+            };
+            return newMessages;
+          });
         }
       }
     } catch (error: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `❌ **Hata:** ${error.message}` }]);
+      console.error("Gemini API Error:", error);
+      setMessages(prev => [...prev, { role: 'assistant', content: `❌ **Hata:** ${error.message || "Analiz sırasında bir hata oluştu."}` }]);
       setIsLoading(false);
     } finally {
       removeFile();
