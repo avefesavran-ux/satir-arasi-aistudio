@@ -21,8 +21,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
+import { default as remarkGfm } from 'remark-gfm';
+import { default as remarkBreaks } from 'remark-breaks';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { jsPDF } from 'jspdf';
