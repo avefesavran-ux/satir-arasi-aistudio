@@ -17,7 +17,7 @@ export default async function handler(req: any, res: any) {
     const ai = new GoogleGenAI({ apiKey });
 
     const chat = ai.chats.create({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.1-pro-preview",
       config: {
         systemInstruction,
         temperature: 0.7,
