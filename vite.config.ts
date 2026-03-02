@@ -17,9 +17,7 @@ export default defineConfig(({mode}) => {
       commonjsOptions: {
         transformMixedEsModules: true,
       },
-    },
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      outDir: 'dist',
     },
     resolve: {
       alias: {
