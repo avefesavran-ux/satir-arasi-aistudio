@@ -154,7 +154,8 @@
 
 .markdown-body hr {
   @apply my-32 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-10;
-}  @apply text-[14px] md:text-[15px] leading-[1.6] text-[var(--text)] font-normal max-w-3xl mx-auto;
+.markdown-body {
+  @apply text-[14px] md:text-[15px] leading-[1.6] text-[var(--text)] font-normal max-w-3xl mx-auto;
 }
 
 .markdown-body p {
