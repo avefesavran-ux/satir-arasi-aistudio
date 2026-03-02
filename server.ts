@@ -22,7 +22,10 @@ async function startServer() {
   app.post("/api/chat", async (req, res) => {
     try {
       const { message, history, systemInstruction } = req.body;
-      const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAVlp_TBQ881hQQJYIOXAGpfpQDPWxlkKQ";
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not set in environment variables.");
+      }
       
       const ai = new GoogleGenAI({ apiKey });
       const chat = ai.chats.create({
