@@ -860,7 +860,7 @@ function MessageItem({ message }: { message: Message }) {
       <div className={cn("text-lg leading-relaxed font-normal", !isAssistant && "whitespace-pre-wrap")}>
         {isAssistant ? (
           <div className="markdown-body p-6 md:p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-sm backdrop-blur-sm">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{cleanContent}</ReactMarkdown>
           </div>
         ) : (
           <>
