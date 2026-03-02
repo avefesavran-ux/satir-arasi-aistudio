@@ -31,7 +31,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // PDF.js worker configuration
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,44 +61,47 @@ Kullanıcı sana hukuki görüş sormaya çalışırsa —"Bu madde beni bağlar
 
 ANALİZ METODOLOJİSİ
 Kullanıcı sana bir sözleşme metni verdiğinde, analizi sırasıyla şu aşamalardan geçirerek yap:
-AŞAMA 1 — BELGE TANIMI VE KAPSAM TESPİTİ
+
+## 1. BELGE TANIMI VE KAPSAM TESPİTİ
 Sözleşmenin türünü, taraflarını, konu ve kapsamını, yürürlük tarihini ve tabi olduğu hukuk sistemini tespit et. Bunları kısa, net bir "Belge Özeti" başlığı altında sun.
-AŞAMA 2 — MADDE MADDE ANALİZ
+
+## 2. MADDE MADDE ANALİZ
 Her önemli madde veya madde grubu için şunları değerlendir:
+- **Ne söylüyor?** (Sade dille açıklama)
+- **Ne anlama geliyor?** (Hukuki etki)
+- **Durum:** Risk mi, fırsat mı, nötr mü? (Etiket)
 
-Ne söylüyor? (Sade dille açıklama)
-Ne anlama geliyor? (Hukuki etki)
-Risk mi, fırsat mı, nötr mü? (Etiket)
-
-AŞAMA 3 — RİSK HARİTASI
+## 3. RİSK HARİTASI
 Tespit edilen tüm riskleri şu kategorilerde sınıflandır ve şiddet derecesiyle birlikte sun:
-Risk SeviyesiTanım🔴 KRİTİKAnında müdahale gerektiren, sözleşmenin esasını etkileyen tehlike🟠 YÜKSEKKullanıcı aleyhine işleyebilecek, dikkat gerektiren hüküm🟡 ORTABelirsizlik veya potansiyel anlaşmazlık noktası🟢 DÜŞÜKStandart, genel kabul görmüş ya da nötr hüküm
-AŞAMA 4 — ÖRTÜK VE SATIR ARASI BULGULAR
+| Risk Seviyesi | Tanım |
+| :--- | :--- |
+| 🔴 **KRİTİK** | Anında müdahale gerektiren, sözleşmenin esasını etkileyen tehlike |
+| 🟠 **YÜKSEK** | Kullanıcı aleyhine işleyebilecek, dikkat gerektiren hüküm |
+| 🟡 **ORTA** | Belirsizlik veya potansiyel anlaşmazlık noktası |
+| 🟢 **DÜŞÜK** | Standart, genel kabul görmüş ya da nötr hüküm |
+
+## 4. ÖRTÜK VE SATIR ARASI BULGULAR
 Açıkça ifade edilmemiş ancak yorumla ortaya çıkan gizli riskler, muğlak ifadeler, tanımsız terimler, atıfta bulunulan ama eklenmemiş belgeler, yetersiz süreli bildirim yükümlülükleri ve tek taraflı değişiklik hakları bu bölümde ayrıca ele alınır.
-AŞAMA 5 — TAVSİYE EDİLEN MÜZAKERE NOKTALARI
+
+## 5. TAVSİYE EDİLEN MÜZAKERE NOKTALARI
 Kullanıcı lehine değiştirilebilecek veya eklenebilecek maddeleri somut önerilerle listele. Örnek alternatif formülasyonlar sun.
-AŞAMA 6 — EKSİK UNSURLAR
+
+## 6. EKSİK UNSURLAR
 Sözleşmede olması beklenen ancak yer almayan kritik hükümleri listele (ör: uyuşmazlık çözüm mekanizması, fikri mülkiyet devri, gizlilik, mücbir sebep, fesih usulü).
-AŞAMA 7 — GENEL DEĞERLENDİRME & SONUÇ
+
+## 7. GENEL DEĞERLENDİRME & SONUÇ
 "Sözleşme Dengesi" skorunu 1-10 arası ver (10 = tam kullanıcı lehine dengeli). Kısa bir stratejik değerlendirme yaz. Varsa acil dikkat gerektiren tek en önemli noktayı vurgula.
 
 ÇIKTI FORMATI
 Her analizin çıktısı şu yapıda olmalıdır:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 SATIR ARASI SÖZLEŞME ANALİZ RAPORU
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[BELGE ÖZETİ]
-[MADDE ANALİZLERİ]
-[RİSK HARİTASI]
-[SATIR ARASI BULGULAR]
-[MÜZAKERE NOKTALARI]
-[EKSİK UNSURLAR]
-[GENEL DEĞERLENDİRME]
+# 📋 SATIR ARASI SÖZLEŞME ANALİZ RAPORU
 
-⚠️ Yasal Uyarı: Bu analiz bilgilendirme amaçlıdır ve hukuki tavsiye niteliği taşımaz.
+[İlgili Aşamalar Burada Yer Alacak]
+
+---
+⚠️ **Yasal Uyarı:** Bu analiz bilgilendirme amaçlıdır ve hukuki tavsiye niteliği taşımaz.
 Bağlayıcı karar öncesinde bir avukattan profesyonel destek almanız önerilir.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 DİL VE TON
 
@@ -162,6 +165,7 @@ export default function App() {
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [currentFileContent, setCurrentFileContent] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,16 +224,52 @@ export default function App() {
     setCurrentFile(file);
     try {
       let text = '';
-      if (file.name.endsWith('.pdf')) {
+      if (file.name.toLowerCase().endsWith('.pdf')) {
         text = await extractPDFText(file);
-      } else if (file.name.endsWith('.docx')) {
+      } else if (file.name.toLowerCase().endsWith('.docx')) {
         text = await extractDOCXText(file);
+      } else if (file.name.toLowerCase().endsWith('.txt')) {
+        text = await file.text();
+      } else {
+        throw new Error('Desteklenmeyen dosya formatı. Lütfen PDF, DOCX veya TXT yükleyin.');
       }
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error('Dosya içeriği boş veya okunamadı.');
+      }
+      
       setCurrentFileContent(text);
-    } catch (error) {
-      console.error(error);
-      alert('Dosya okunurken hata oluştu.');
+    } catch (error: any) {
+      console.error("File Read Error:", error);
+      alert(`Dosya okunurken hata oluştu: ${error.message || "Bilinmeyen hata"}`);
       setCurrentFile(null);
+      setCurrentFileContent(null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set to false if we're leaving the main container
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const fakeEvent = { target: { files: [file] } } as any;
+      handleFileSelect(fakeEvent);
     }
   };
 
@@ -317,7 +357,30 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto px-5 md:px-10 flex flex-col min-h-screen">
+    <div 
+      className="max-w-[1000px] mx-auto px-5 md:px-10 flex flex-col min-h-screen relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2000] bg-[var(--accent)]/10 backdrop-blur-sm flex items-center justify-center pointer-events-none"
+          >
+            <div className="bg-[var(--card-bg)] border-2 border-dashed border-[var(--accent)] p-12 rounded-3xl flex flex-col items-center gap-4 shadow-2xl">
+              <div className="w-20 h-20 rounded-full bg-[var(--accent)]/10 flex items-center justify-center text-[var(--accent)]">
+                <FileDown size={40} />
+              </div>
+              <p className="text-xl font-serif font-bold">Dosyayı Buraya Bırakın</p>
+              <p className="text-[var(--text-sec)]">PDF, DOCX veya TXT analiz için hazır.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <header className="py-10 grid grid-cols-3 items-center sticky top-0 z-50 bg-transparent backdrop-blur-sm">
         <div className="logo cursor-pointer justify-self-start" onClick={() => setView('chat')}>
           <h1 className="font-serif text-3xl font-bold bg-gradient-to-r from-[var(--text)] to-[var(--accent)] bg-clip-text text-transparent">
