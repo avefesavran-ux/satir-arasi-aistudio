@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import * as pdfjsLib from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import { jsPDF } from 'jspdf';
@@ -124,6 +126,11 @@ Analiz raporunu bir "Hukuki Rapor" estetiğinde sunmalısın. Markdown formatın
 - Analiz raporunun en başında mutlaka [RISK: XX] formatında (XX yerine 0-100 arası bir sayı gelecek şekilde) bir risk skoru belirtmelisin.
 - Raporun dili profesyonel, ciddi ve güven verici olmalıdır.
 - Asla düz metin veya karmaşık yıldız/tire yığınları kullanma; her zaman Markdown hiyerarşisine sadık kal.
+- Paragraflar arasında mutlaka iki adet satır sonu (double newline) bırakarak metnin akışını sağla. Bu, metnin düzenli paragraflar halinde görünmesi için kritiktir.
+- Asla tek satır sonu ile paragraf yapmaya çalışma; her zaman boş bir satır bırak.
+- Raporun görsel yapısı "temiz, ferah ve akıcı" olmalıdır. Madde yığınlarından kaçın, anlatımı paragraflara yay.
+- Her ana bölümden sonra mutlaka bir yatay çizgi (---) ekle.
+- Raporun sonunda mutlaka bir "Sonuç ve Özet" paragrafı ekle.
 
 
 ÖZEL DURUMLAR
@@ -695,9 +702,11 @@ function MessageItem({ message }: { message: Message }) {
       const riskMatch = message.content.match(/\[RISK:\s*(\d+)\]/);
       if (riskMatch) {
         setRiskScore(parseInt(riskMatch[1]));
-        setCleanContent(message.content.replace(/\[RISK:\s*\d+\]/, '').trim());
+        const contentWithoutRisk = message.content.replace(/\[RISK:\s*\d+\]/, '').trim();
+        // Normalize multiple newlines but preserve double newlines for paragraphs
+        setCleanContent(contentWithoutRisk.replace(/\n{3,}/g, '\n\n'));
       } else {
-        setCleanContent(message.content);
+        setCleanContent(message.content.replace(/\n{3,}/g, '\n\n'));
       }
     }
   }, [message, isAssistant]);
@@ -721,21 +730,23 @@ function MessageItem({ message }: { message: Message }) {
     printContainer.style.padding = '40px';
     printContainer.style.backgroundColor = 'white';
     printContainer.style.color = 'black';
-    printContainer.style.fontFamily = '"Times New Roman", Times, serif';
-    printContainer.style.fontSize = '11pt';
-    printContainer.style.lineHeight = '1.5';
+    printContainer.style.fontFamily = '"Inter", sans-serif';
+    printContainer.style.fontSize = '12pt';
+    printContainer.style.lineHeight = '1.6';
+    printContainer.style.color = '#1d1d1f';
 
     printContainer.innerHTML = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="font-size: 18pt; margin-bottom: 5px;">Satır Arası Hukuki Analiz Raporu</h1>
-        <p style="font-size: 10pt; color: #666;">${new Date().toLocaleString('tr-TR')}</p>
+      <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #0071e3; padding-bottom: 20px;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 24pt; margin-bottom: 10px; color: #1d1d1f;">Satır Arası Hukuki Analiz Raporu</h1>
+        <p style="font-size: 10pt; color: #6e6e73; text-transform: uppercase; letter-spacing: 1px;">${new Date().toLocaleString('tr-TR')}</p>
       </div>
       ${riskScore !== null ? `
-        <div style="margin-bottom: 20px; font-weight: bold; font-size: 12pt;">
-          Sözleşme Risk Skoru: %${riskScore}
+        <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fb; border-radius: 15px; border: 1px solid #eee;">
+          <div style="font-weight: bold; font-size: 11pt; color: #6e6e73; margin-bottom: 10px;">SÖZLEŞME RİSK SKORU</div>
+          <div style="font-size: 24pt; font-weight: bold; color: ${riskColor};">%${riskScore}</div>
         </div>
       ` : ''}
-      <div style="white-space: pre-wrap;">${cleanContent}</div>
+      <div style="white-space: pre-wrap; text-align: justify;">${cleanContent}</div>
       <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; font-style: italic; font-size: 9pt; color: #666;">
         Yasal Uyarı: Bu analiz bilgilendirme amaçlıdır ve hukuki tavsiye niteliği taşımaz.
         Bağlayıcı karar öncesinde bir avukattan profesyonel destek almanız önerilir.
@@ -789,10 +800,11 @@ function MessageItem({ message }: { message: Message }) {
             }),
             new Paragraph({ text: "" }),
           ] : []),
-          ...cleanContent.split('\n').map(line => 
+          ...cleanContent.split(/\n\n+/).map(paragraph => 
             new Paragraph({
-              children: [new TextRun(line)],
-              spacing: { before: 100, after: 100 }
+              children: [new TextRun(paragraph.replace(/\n/g, ' '))],
+              spacing: { before: 200, after: 200 },
+              alignment: AlignmentType.JUSTIFIED
             })
           ),
           new Paragraph({ text: "" }),
@@ -847,8 +859,8 @@ function MessageItem({ message }: { message: Message }) {
 
       <div className={cn("text-lg leading-relaxed font-normal", !isAssistant && "whitespace-pre-wrap")}>
         {isAssistant ? (
-          <div className="markdown-body p-6 md:p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-sm">
-            <ReactMarkdown>{cleanContent}</ReactMarkdown>
+          <div className="markdown-body p-6 md:p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-sm backdrop-blur-sm">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanContent}</ReactMarkdown>
           </div>
         ) : (
           <>
