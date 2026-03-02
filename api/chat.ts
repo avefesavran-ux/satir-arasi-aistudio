@@ -8,34 +8,39 @@ export default async function handler(req: any, res: any) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(500).send("GEMINI_API_KEY tanımlı değil.");
+      return res.status(500).send("GEMINI_API_KEY is not set in environment variables.");
     }
 
-    // 🔥 Node ortamında body böyle alınır
     const { message, history, systemInstruction } = req.body;
 
     const ai = new GoogleGenAI({ apiKey });
-
     const chat = ai.chats.create({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3.1-pro-preview",
       config: {
         systemInstruction,
         temperature: 0.7,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
       },
       history: history || [],
     });
 
-    const result = await chat.sendMessage({ message });
+    const result = await chat.sendMessageStream({ message });
 
-    return res.status(200).json({
-      text: result.text,
-    });
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    for await (const chunk of result) {
+      const text = chunk.text;
+      if (text) {
+        res.write(text);
+      }
+    }
+    res.end();
 
   } catch (err: any) {
-    console.error("Gemini hata:", err);
+    console.error("Gemini Error:", err);
     return res.status(500).json({
-      error: err?.message || "Bilinmeyen hata",
+      error: err?.message || "Internal Server Error",
     });
   }
 }
