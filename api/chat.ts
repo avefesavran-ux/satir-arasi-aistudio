@@ -1,18 +1,18 @@
 import { GoogleGenAI } from "@google/genai";
-export const maxDuration = 60;
 
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return res.status(405).send("Method not allowed");
   }
 
   try {
-    const { message, history, systemInstruction } = await req.json();
-
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return new Response("GEMINI_API_KEY tanımlı değil.", { status: 500 });
+      return res.status(500).send("GEMINI_API_KEY tanımlı değil.");
     }
+
+    // 🔥 Node ortamında body böyle alınır
+    const { message, history, systemInstruction } = req.body;
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -26,31 +26,16 @@ export default async function handler(req: Request) {
       history: history || [],
     });
 
-    // 🚨 STREAM YERİNE NORMAL MESAJ GÖNDER
     const result = await chat.sendMessage({ message });
 
-    return new Response(
-      JSON.stringify({
-        text: result.text,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return res.status(200).json({
+      text: result.text,
+    });
 
   } catch (err: any) {
     console.error("Gemini hata:", err);
-
-    return new Response(
-      JSON.stringify({
-        error: "Gemini API hatası",
-        detail: err?.message || "Bilinmeyen hata",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return res.status(500).json({
+      error: err?.message || "Bilinmeyen hata",
+    });
   }
 }
