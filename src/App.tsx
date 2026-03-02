@@ -132,6 +132,14 @@ Analiz raporunu bir "Hukuki Rapor" estetiğinde sunmalısın. Markdown formatın
 - Her ana bölümden sonra mutlaka bir yatay çizgi (---) ekle.
 - Raporun sonunda mutlaka bir "Sonuç ve Özet" paragrafı ekle.
 
+KESİN YASAKLAR VE FORMAT KURALLARI:
+- ASLA JSON formatında çıktı üretme.
+- ASLA kod blokları (code blocks) kullanma.
+- Teknik karakterleri (\n, ", {}, [], :) metin içinde ham haliyle veya programlama dili yapısı oluşturacak şekilde kullanma.
+- Çıktı doğrudan insan tarafından okunabilir, temiz, akıcı ve hukuki terminolojiye uygun bir Türkçe ile hazırlanmış profesyonel bir hukuk raporu olmalıdır.
+- Raporu şu bölümlerle yapılandır: 1. Belge Özeti, 2. Madde Analizleri, 3. Risk Haritası, 4. Kritik Bulgular, 5. Öneriler ve 6. Sonuç.
+- Sadece Markdown başlıkları (#, ##, ###), listeler (- veya *) ve kalın yazım (**bold**) kullan.
+- Raporun içinde JSON verisi, süslü parantezler, köşeli parantezler (risk skoru hariç) veya programlama dili karakterleri kesinlikle yer almamalıdır.
 
 ÖZEL DURUMLAR
 Kullanıcı sözleşme yüklemeden hukuki soru sorarsa:
@@ -699,15 +707,30 @@ function MessageItem({ message }: { message: Message }) {
 
   useEffect(() => {
     if (isAssistant) {
-      const riskMatch = message.content.match(/\[RISK:\s*(\d+)\]/);
+      let content = message.content;
+      
+      // Remove risk score
+      const riskMatch = content.match(/\[RISK:\s*(\d+)\]/);
       if (riskMatch) {
         setRiskScore(parseInt(riskMatch[1]));
-        const contentWithoutRisk = message.content.replace(/\[RISK:\s*\d+\]/, '').trim();
-        // Normalize multiple newlines but preserve double newlines for paragraphs
-        setCleanContent(contentWithoutRisk.replace(/\n{3,}/g, '\n\n'));
-      } else {
-        setCleanContent(message.content.replace(/\n{3,}/g, '\n\n'));
+        content = content.replace(/\[RISK:\s*\d+\]/, '').trim();
       }
+
+      // Aggressive cleaning of technical slop (JSON, code blocks)
+      // If content starts with ```json or { and ends with } or ```
+      content = content.trim();
+      if (content.startsWith('```json')) {
+        content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (content.startsWith('```')) {
+        content = content.replace(/^```\w*\s*/, '').replace(/\s*```$/, '');
+      }
+
+      // If it looks like JSON, try to extract the text if possible, or just leave it
+      // But based on user request, they want to avoid technical characters.
+      // We'll normalize newlines and remove literal \n strings if they appear as text
+      content = content.replace(/\\n/g, '\n');
+      
+      setCleanContent(content.replace(/\n{3,}/g, '\n\n'));
     }
   }, [message, isAssistant]);
 
