@@ -36,12 +36,16 @@
   @apply text-lg leading-relaxed text-[var(--text)] font-normal;
 }
 
+.markdown-body h1 {
+  @apply font-serif text-4xl mt-16 mb-8 font-bold text-[var(--text)] text-center;
+}
+
 .markdown-body h2 {
-  @apply font-serif text-3xl mt-12 mb-6 font-bold border-b border-[var(--border)] pb-4 text-[var(--text)];
+  @apply font-serif text-2xl mt-12 mb-6 font-bold border-b border-[var(--border)] pb-4 text-[var(--text)] tracking-tight;
 }
 
 .markdown-body h3 {
-  @apply font-serif text-2xl mt-10 mb-4 font-semibold text-[var(--accent)];
+  @apply font-serif text-xl mt-10 mb-4 font-semibold text-[var(--accent)] tracking-wide;
 }
 
 .markdown-body ul {
@@ -49,7 +53,7 @@
 }
 
 .markdown-body li {
-  @apply relative pl-8 before:content-[''] before:absolute before:left-0 before:top-[0.6em] before:w-2 before:h-2 before:bg-[var(--accent)] before:rounded-full;
+  @apply relative pl-8 before:content-[''] before:absolute before:left-0 before:top-[0.7em] before:w-1.5 before:h-1.5 before:bg-[var(--accent)] before:rounded-full;
 }
 
 .markdown-body p {
@@ -57,30 +61,33 @@
 }
 
 .markdown-body strong {
-  @apply font-semibold text-[var(--text)] bg-[var(--accent)]/5 px-1 rounded;
+  @apply font-bold text-[var(--text)] bg-[var(--accent)]/5 px-1 rounded;
 }
 
 .markdown-body blockquote {
-  @apply border-l-4 border-[var(--accent)] pl-6 py-2 my-8 bg-[var(--accent)]/5 italic rounded-r-xl;
+  @apply border-l-4 border-[var(--accent)] pl-8 py-4 my-10 bg-[var(--accent)]/5 italic rounded-r-2xl text-[var(--text-sec)] relative;
+}
+
+.markdown-body blockquote p {
+  @apply m-0;
 }
 
 .markdown-body table {
-  @apply w-full my-8 border-collapse overflow-hidden rounded-xl border border-[var(--border)];
+  @apply w-full my-10 border-collapse overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm;
 }
 
 .markdown-body th {
-  @apply bg-[var(--accent)]/10 text-[var(--accent)] font-bold p-4 text-left border-b border-[var(--border)];
+  @apply bg-[var(--accent)]/10 text-[var(--accent)] font-bold p-5 text-left border-b border-[var(--border)] text-sm uppercase tracking-wider;
 }
 
 .markdown-body td {
-  @apply p-4 border-b border-[var(--border)] bg-white/50;
+  @apply p-5 border-b border-[var(--border)] bg-white/40 text-sm;
 }
 
 .markdown-body tr:last-child td {
   @apply border-b-0;
 }
 
-/* Custom separator for the report */
 .markdown-body hr {
-  @apply my-12 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent;
+  @apply my-16 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-50;
 }
