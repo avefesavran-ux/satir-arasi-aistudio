@@ -34,39 +34,40 @@
 }
 
 .markdown-body {
-  @apply text-lg leading-relaxed text-[var(--text)] font-normal;
-}
-
-.markdown-body h1 {
-  @apply font-serif text-4xl mt-16 mb-8 font-bold text-[var(--text)] text-center;
-}
-
-.markdown-body h2 {
-  @apply font-serif text-2xl mt-12 mb-6 font-bold border-b border-[var(--border)] pb-4 text-[var(--text)] tracking-tight;
-}
-
-.markdown-body h3 {
-  @apply font-serif text-xl mt-10 mb-4 font-semibold text-[var(--accent)] tracking-wide;
-}
-
-.markdown-body ul {
-  @apply list-none pl-0 my-6 space-y-4;
-}
-
-.markdown-body li {
-  @apply relative pl-8 before:content-[''] before:absolute before:left-0 before:top-[0.7em] before:w-1.5 before:h-1.5 before:bg-[var(--accent)] before:rounded-full;
+  @apply text-[18px] md:text-[20px] leading-[1.8] text-[var(--text)] font-normal max-w-4xl mx-auto;
 }
 
 .markdown-body p {
-  @apply my-6 leading-relaxed;
+  @apply my-12 leading-[2.1] text-[var(--text)] opacity-95;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  @apply font-serif text-[var(--text)] font-bold tracking-tight;
+}
+
+.markdown-body h1 { @apply text-[48px] md:text-[72px] mt-40 mb-28 text-center leading-[1.1]; }
+.markdown-body h2 { @apply text-[40px] mt-32 mb-16 border-b border-[var(--border)] pb-12; }
+.markdown-body h3 { @apply text-[28px] mt-24 mb-12 text-[var(--accent)] font-semibold; }
+
+.markdown-body ul, .markdown-body ol {
+  @apply my-12 space-y-6 pl-0;
+}
+
+.markdown-body li {
+  @apply relative pl-14 leading-relaxed mb-6;
+}
+
+.markdown-body ul li::before {
+  content: "";
+  @apply absolute left-0 top-[0.85em] w-4 h-4 bg-[var(--accent)] rounded-full opacity-10;
 }
 
 .markdown-body strong {
-  @apply font-bold text-[var(--text)] bg-[var(--accent)]/5 px-1 rounded;
+  @apply font-bold text-[var(--text)] bg-[var(--accent)]/10 px-3 py-1.5 rounded-2xl;
 }
 
 .markdown-body blockquote {
-  @apply border-l-4 border-[var(--accent)] pl-8 py-4 my-10 bg-[var(--accent)]/5 italic rounded-r-2xl text-[var(--text-sec)] relative;
+  @apply border-l-4 border-[var(--accent)]/30 pl-16 py-14 my-24 bg-[var(--accent)]/5 italic rounded-r-[100px] text-[var(--text-sec)] transition-all hover:bg-[var(--accent)]/8 shadow-inner;
 }
 
 .markdown-body blockquote p {
@@ -74,15 +75,15 @@
 }
 
 .markdown-body table {
-  @apply w-full my-10 border-collapse overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm;
+  @apply w-full my-24 border-collapse overflow-hidden rounded-[64px] border border-[var(--border)] shadow-sm text-left bg-white/20 backdrop-blur-sm;
 }
 
 .markdown-body th {
-  @apply bg-[var(--accent)]/10 text-[var(--accent)] font-bold p-5 text-left border-b border-[var(--border)] text-sm uppercase tracking-wider;
+  @apply bg-[var(--accent)]/5 text-[var(--accent)] font-bold p-12 border-b border-[var(--border)] text-xs uppercase tracking-[4px];
 }
 
 .markdown-body td {
-  @apply p-5 border-b border-[var(--border)] bg-white/40 text-sm;
+  @apply p-12 border-b border-[var(--border)] text-[19px] align-top leading-relaxed;
 }
 
 .markdown-body tr:last-child td {
@@ -90,5 +91,5 @@
 }
 
 .markdown-body hr {
-  @apply my-16 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-50;
+  @apply my-32 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-10;
 }
