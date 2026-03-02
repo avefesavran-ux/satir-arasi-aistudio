@@ -17,55 +17,36 @@ export default async function handler(req: Request) {
     const ai = new GoogleGenAI({ apiKey });
 
     const chat = ai.chats.create({
-      model: "gemini-3.1-pro-preview", // MODEL DEĞİŞTİ
+      model: "gemini-2.0-flash",
       config: {
         systemInstruction,
         temperature: 0.7,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 2048,
       },
       history: history || [],
     });
 
-    let responseStream;
+    // 🚨 STREAM YERİNE NORMAL MESAJ GÖNDER
+    const result = await chat.sendMessage({ message });
 
-    try {
-      responseStream = await chat.sendMessageStream({ message });
-    } catch (error: any) {
-      console.error("Gemini API hatası:", error);
-      return new Response(
-        JSON.stringify({
-          error: "Gemini API hatası",
-          detail: error.message,
-        }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of responseStream) {
-            const text = chunk.text;
-            if (text) {
-              controller.enqueue(new TextEncoder().encode(text));
-            }
-          }
-        } catch (err: any) {
-          console.error("Stream hatası:", err);
-          controller.error(err);
-        } finally {
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
-  } catch (err: any) {
-    console.error("api/chat genel hata:", err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({
+        text: result.text,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+  } catch (err: any) {
+    console.error("Gemini hata:", err);
+
+    return new Response(
+      JSON.stringify({
+        error: "Gemini API hatası",
+        detail: err?.message || "Bilinmeyen hata",
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
