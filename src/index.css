@@ -11,7 +11,7 @@
     --bg: #f8f9fb;
     --card-bg: rgba(255, 255, 255, 0.8);
     --text: #1d1d1f;
-    --text-sec: #6e6e73;
+     --text-sec: #6e6e73;
     --accent: #0071e3;
     --border: rgba(0, 0, 0, 0.08);
     --glass: blur(20px) saturate(180%);
@@ -34,6 +34,65 @@
 }
 
 .markdown-body {
+  @apply text-[14px] md:text-[15px] leading-[1.6] text-[var(--text)] font-normal max-w-3xl mx-auto;
+}
+
+.markdown-body p {
+  @apply my-4 leading-[1.7] text-[var(--text)] opacity-90;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  @apply font-serif text-[var(--text)] font-bold tracking-tight;
+}
+
+.markdown-body h1 { @apply text-[28px] md:text-[32px] mt-12 mb-8 text-center leading-[1.2]; }
+.markdown-body h2 { @apply text-[22px] md:text-[24px] mt-10 mb-6 border-b border-[var(--border)] pb-4; }
+.markdown-body h3 { @apply text-[18px] md:text-[20px] mt-8 mb-4 text-[var(--accent)] font-semibold; }
+
+.markdown-body ul, .markdown-body ol {
+  @apply my-6 space-y-3 pl-0;
+}
+
+.markdown-body li {
+  @apply relative pl-8 leading-relaxed mb-3;
+}
+
+.markdown-body ul li::before {
+  content: "";
+  @apply absolute left-0 top-[0.6em] w-2 h-2 bg-[var(--accent)] rounded-full opacity-20;
+}
+
+.markdown-body strong {
+  @apply font-bold text-[var(--text)] bg-[var(--accent)]/5 px-2 py-0.5 rounded-lg;
+}
+
+.markdown-body blockquote {
+  @apply border-l-2 border-[var(--accent)]/20 pl-8 py-6 my-8 bg-[var(--accent)]/5 italic rounded-r-2xl text-[var(--text-sec)] transition-all;
+}
+
+.markdown-body blockquote p {
+  @apply m-0;
+}
+
+.markdown-body table {
+  @apply w-full my-8 border-collapse overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm text-left bg-white/20 backdrop-blur-sm;
+}
+
+.markdown-body th {
+  @apply bg-[var(--accent)]/5 text-[var(--accent)] font-bold p-4 border-b border-[var(--border)] text-[10px] uppercase tracking-[2px];
+}
+
+.markdown-body td {
+  @apply p-4 border-b border-[var(--border)] text-[13px] align-top leading-relaxed;
+}
+
+.markdown-body tr:last-child td {
+  @apply border-b-0;
+}
+
+.markdown-body hr {
+  @apply my-12 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-20;
+}
   @apply text-[18px] md:text-[20px] leading-[1.8] text-[var(--text)] font-normal max-w-4xl mx-auto;
 }
 
