@@ -11,7 +11,7 @@
     --bg: #f8f9fb;
     --card-bg: rgba(255, 255, 255, 0.8);
     --text: #1d1d1f;
-     --text-sec: #6e6e73;
+    --text-sec: #6e6e73;
     --accent: #0071e3;
     --border: rgba(0, 0, 0, 0.08);
     --glass: blur(20px) saturate(180%);
@@ -93,6 +93,9 @@
 .markdown-body hr {
   @apply my-12 border-0 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-20;
 }
+
+/* HATA BURADAYDI: Seçici (.markdown-body) ve açılış parantezi eklendi */
+.markdown-body {
   @apply text-[18px] md:text-[20px] leading-[1.8] text-[var(--text)] font-normal max-w-4xl mx-auto;
 }
 
