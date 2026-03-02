@@ -31,7 +31,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // PDF.js worker configuration
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -110,6 +110,20 @@ Ton: Profesyonel, güven verici, keskin — ama jargondan kaçınan
 Hukuki terimleri kullanırken parantez içinde sade açıklamasını ver: "tazminat (zarar karşılığı ödeme)"
 Uzun, dolaylı cümleler kurma. Avukat gibi düşün, gazeteci gibi yaz.
 "Belki", "sanırım", "galiba" gibi ifadeler kullanma. Emin olmadığın konularda "Bu hüküm yoruma açıktır ve..." şeklinde ifade et.
+
+GÖRSEL VE ESTETİK KURALLAR (KRİTİK)
+Analiz raporunu bir "Hukuki Rapor" estetiğinde sunmalısın. Markdown formatını şu şekilde kullan:
+- Ana başlık için tek kare (#) kullan.
+- Bölüm başlıkları için çift kare (##) kullan.
+- Alt başlıklar için üç kare (###) kullan.
+- Sözleşmeden yapılan doğrudan alıntıları mutlaka blok alıntı içinde, çift tırnak kullanarak ve italik yazarak belirt: > *"Alıntı yapılan madde metni"*
+- Önemli terimleri, risk seviyelerini ve kritik vurguları **kalın (bold)** yaz.
+- Maddeleri listelerken düzenli bullet point'ler kullan.
+- Raporun bölümleri arasına yatay çizgi (---) ekle.
+- Karmaşık ve düzensiz sembollerden kaçın, temiz bir hiyerarşi kur.
+- Analiz raporunun en başında mutlaka [RISK: XX] formatında (XX yerine 0-100 arası bir sayı gelecek şekilde) bir risk skoru belirtmelisin.
+- Raporun dili profesyonel, ciddi ve güven verici olmalıdır.
+- Asla düz metin veya karmaşık yıldız/tire yığınları kullanma; her zaman Markdown hiyerarşisine sadık kal.
 
 
 ÖZEL DURUMLAR
@@ -194,27 +208,68 @@ export default function App() {
   };
 
   const extractPDFText = async (file: File) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map((item: any) => item.str).join(' ');
-      fullText += pageText + '\n\n';
+    try {
+      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      }
+      console.log(`Starting PDF extraction for ${file.name}. Worker: ${pdfjsLib.GlobalWorkerOptions.workerSrc}`);
+      const arrayBuffer = await file.arrayBuffer();
+      console.log(`ArrayBuffer size: ${arrayBuffer.byteLength} bytes`);
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: arrayBuffer,
+        useWorkerFetch: true,
+        isEvalSupported: false,
+      });
+      loadingTask.onProgress = (progress) => {
+        if (progress.total > 0) {
+          console.log(`Loading PDF: ${Math.round(progress.loaded / progress.total * 100)}%`);
+        }
+      };
+      const pdf = await loadingTask.promise;
+      console.log(`PDF loaded successfully: ${pdf.numPages} pages found.`);
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        console.log(`Page ${i}: ${textContent.items.length} text items found.`);
+        const pageText = textContent.items
+          .map((item: any) => item.str || '')
+          .join(' ');
+        
+        console.log(`Page ${i} extracted text length: ${pageText.length}`);
+        
+        if (pageText.trim().length > 0) {
+          fullText += pageText + '\n\n';
+        } else {
+          console.warn(`Page ${i} has no text content.`);
+        }
+      }
+      console.log(`Total extracted text length: ${fullText.length} characters.`);
+      return fullText.trim();
+    } catch (error: any) {
+      console.error("PDF Extraction Error:", error);
+      throw new Error(`PDF okunurken bir hata oluştu: ${error.message}. Lütfen dosyanın bozuk olmadığından veya şifreli olmadığından emin olun.`);
     }
-    return fullText.trim();
   };
 
   const extractDOCXText = async (file: File) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value.trim();
+    try {
+      console.log(`Starting DOCX extraction for ${file.name}.`);
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      console.log(`DOCX extracted: ${result.value.length} characters.`);
+      return result.value.trim();
+    } catch (error: any) {
+      console.error("DOCX Extraction Error:", error);
+      throw new Error(`DOCX okunurken bir hata oluştu: ${error.message}`);
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    console.log(`File selected: ${file.name}, size: ${file.size} bytes`);
 
     if (file.size > 10 * 1024 * 1024) {
       alert('Dosya boyutu 10MB\'dan küçük olmalıdır.');
@@ -235,7 +290,7 @@ export default function App() {
       }
       
       if (!text || text.trim().length === 0) {
-        throw new Error('Dosya içeriği boş veya okunamadı.');
+        throw new Error('Dosya içeriği boş veya metin katmanı bulunamadı. Eğer bu bir tarama (resim) dosyası ise, lütfen metin içeren bir versiyonunu yükleyin veya metni doğrudan buraya yapıştırın.');
       }
       
       setCurrentFileContent(text);
@@ -790,9 +845,9 @@ function MessageItem({ message }: { message: Message }) {
         </div>
       )}
 
-      <div className={cn("text-lg leading-relaxed font-normal", isAssistant ? "markdown-body" : "whitespace-pre-wrap")}>
+      <div className={cn("text-lg leading-relaxed font-normal", !isAssistant && "whitespace-pre-wrap")}>
         {isAssistant ? (
-          <div className="markdown-body">
+          <div className="markdown-body p-6 md:p-10 bg-[var(--card-bg)] border border-[var(--border)] rounded-[32px] shadow-sm">
             <ReactMarkdown>{cleanContent}</ReactMarkdown>
           </div>
         ) : (
