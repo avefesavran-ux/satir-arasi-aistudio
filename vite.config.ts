@@ -10,6 +10,14 @@ export default defineConfig(({mode}) => {
     optimizeDeps: {
       include: ['remark-gfm', 'remark-breaks'],
     },
+    ssr: {
+      noExternal: ['react-markdown', 'remark-gfm', 'remark-breaks'],
+    },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+    },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
